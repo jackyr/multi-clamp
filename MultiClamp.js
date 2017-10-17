@@ -50,7 +50,7 @@
       throw new Error('Invaild clamp number!');
     }
     
-    this.hasCssClamp = !this.option.disableCssClamp
+    this.useCssClamp = !this.option.disableCssClamp
       && !this.option.reverse
       && this.option.ellipsis === '...'
       && typeof document.body.style.webkitLineClamp !== 'undefined';
@@ -60,12 +60,12 @@
   };
   MultiClamp.prototype = {
     constructor: MultiClamp,
-    refresh: function() {
+    reload: function() {
       this.init();
       this.clamp();
     },
     init: function() {
-      if (this.hasCssClamp) {
+      if (this.useCssClamp) {
         var cssClampStyle = {
           display: '-webkit-box',
           overflow: 'hidden',
@@ -117,7 +117,7 @@
     },
     clamp: function() {
       var text = getText(this.element);
-      if (text === '' || this.hasCssClamp) return;
+      if (text === '' || this.useCssClamp) return;
 
       var currentHeight = getHeight(this.element);
       var singleLineHeight = this.getSingleLineHeight();
