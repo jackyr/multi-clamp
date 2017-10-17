@@ -10,9 +10,9 @@ Simple, efficient and easy-to-use multiline text clamp module. (supports reverse
 
 ![Custom ellipsis](https://raw.githubusercontent.com/jackyr/multi-clamp/master/example/sample2.png)
 
-- Resverse clamp:
+- Reverse clamp:
 
-![Resversed clamp](https://raw.githubusercontent.com/jackyr/multi-clamp/master/example/sample3.png)
+![Reversed clamp](https://raw.githubusercontent.com/jackyr/multi-clamp/master/example/sample3.png)
 
 [Demo Page](https://jackyr.github.io/multi-clamp/example/index.html)
 
@@ -37,6 +37,7 @@ Just new the multi-clamp constructor.
 
 ```html
 <div id="textContainer">...much...long...text...</div>
+
 <script>
 new MultiClamp(document.getElementById('textContainer'), {
   ellipsis: '...',
