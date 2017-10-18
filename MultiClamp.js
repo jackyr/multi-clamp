@@ -39,18 +39,25 @@
 
     this.option = {
       ellipsis: 'ellipsis' in _option ? _option.ellipsis : '...',
-      clamp: 'clamp' in _option ? int(_option.clamp) : 3,
+      clamp: 'clamp' in _option ? _option.clamp : 3,
       reverse: 'reverse' in _option ? !!_option.reverse : false,
       splitByWords: 'splitByWords' in _option ? !!_option.splitByWords : false,
-      disableCssClamp: 'disableCssClamp' in _option ? !!_option.disableCssClamp : false,
-      lineTextLen: _option.lineTextLen,
+      disableCssClamp: 'disableCssClamp' in _option ? !!_option.disableCssClamp : false
     };
-
-    if (isNaN(this.option.clamp) || this.option.clamp < 1) {
-      throw new Error('Invaild clamp number!');
-    }
+    if ('lineTextLen' in _option) this.option.lineTextLen = _option.lineTextLen;
     
+    if (this.option.clamp === 'auto') {
+      this.autoClamp = true;
+    } else {
+      this.option.clamp = int(this.option.clamp);
+      if (isNaN(this.option.clamp) || this.option.clamp < 1) {
+        throw new Error('Invaild clamp number!');
+      }
+      this.autoClamp = false;
+    }
+
     this.useCssClamp = !this.option.disableCssClamp
+      && !this.autoClamp
       && !this.option.reverse
       && this.option.ellipsis === '...'
       && typeof document.body.style.webkitLineClamp !== 'undefined';
@@ -81,25 +88,27 @@
         this.ellipsis.style.display = 'none';
         this.ellipsis.innerHTML = this.option.ellipsis;
         this.content = document.createElement('span');
+        this.wrapper = document.createElement('div');
         setText(this.content, getText(this.element));
         this.element.innerHTML = '';
+        this.element.appendChild(this.wrapper);
         if (this.option.reverse) {
-          this.element.appendChild(this.ellipsis);
-          this.element.appendChild(this.content);
+          this.wrapper.appendChild(this.ellipsis);
+          this.wrapper.appendChild(this.content);
         } else {
-          this.element.appendChild(this.content);
-          this.element.appendChild(this.ellipsis);
+          this.wrapper.appendChild(this.content);
+          this.wrapper.appendChild(this.ellipsis);
         }
       }
     },
     getSingleLineHeight: function() {  
-      var lineHeight = getStyle(this.element, 'line-height');
+      var lineHeight = getStyle(this.wrapper, 'line-height');
       var self = this;
 
       if (lineHeight.indexOf('px') > -1) {
         return num(lineHeight);
       } else if (!isNaN(lineHeight)) {
-        var fontSize = getStyle(this.element, 'font-size');
+        var fontSize = getStyle(this.wrapper, 'font-size');
         if (fontSize.indexOf('px') > -1) return num(fontSize) * (lineHeight * 100) / 100;
         if (fontSize.indexOf('pt') > -1) return num(fontSize) * 400 / 300 * (lineHeight * 100) / 100;
         return createSingleLineAndGetHeight();
@@ -110,20 +119,27 @@
       function createSingleLineAndGetHeight() {
         var tempText = getText(self.content);
         setText(self.content, '.');
-        var height = getHeight(self.element);
+        var height = getHeight(self.wrapper);
         setText(self.content, tempText);
         return height;
       }
     },
     clamp: function() {
-      var text = getText(this.element);
-      if (text === '' || this.useCssClamp) return;
-
-      var currentHeight = getHeight(this.element);
+      if (this.useCssClamp) return;
+      var text = getText(this.content);
+      var currentHeight = getHeight(this.wrapper);
       var singleLineHeight = this.getSingleLineHeight();
-      if (!currentHeight || !singleLineHeight) return;
+      if (text === '' || !currentHeight || !singleLineHeight) return;
       
-      var maxHeight = singleLineHeight * this.option.clamp;
+      var maxHeight;
+      if (this.autoClamp) {
+        maxHeight = getHeight(this.element);
+        this.option.clamp = int(maxHeight / singleLineHeight);
+      } else {
+        maxHeight = singleLineHeight * this.option.clamp;
+      }
+      if (!maxHeight) return;
+
       var defaultIncrease = (this.option.lineTextLen || Math.min(20, text.length / this.option.clamp)) * this.option.clamp;
 
       if (currentHeight > maxHeight) {
@@ -140,7 +156,7 @@
       setText(this.content, this.option.splitByWords ? slicedTrunk.join('') : slicedTrunk);
   
       var i;
-      if (getHeight(this.element) > maxHeight) {
+      if (getHeight(this.wrapper) > maxHeight) {
         i = isDecrease ? increase : int(increase / 2) || 1;
         this.trunkSlice(trunk, maxHeight, i, len - i, true);
       } else {
@@ -148,11 +164,25 @@
           if (this.option.splitByWords && /\s/.test(slicedTrunk[this.option.reverse ? 0 : slicedTrunk.length - 1])) {
             setText(this.content, (this.option.reverse ? slicedTrunk.slice(1) : slicedTrunk.slice(0, slicedTrunk.length - 1)).join(''));
           }
+          this.clean();
           return;
         }
         i = isDecrease ? int(increase / 2) || 1 : increase;
         this.trunkSlice(trunk, maxHeight, i, len + i, false);
       }
+    },
+    clean: function () {
+      if (this.option.reverse) {
+        this.element.innerHTML = this.ellipsis.innerHTML + getText(this.content);
+      } else {
+        this.element.innerHTML = getText(this.content) + this.ellipsis.innerHTML;
+      }
+      this.wrapper = null;
+      this.ellipsis = null;
+      this.content = null;
+      delete this.wrapper;
+      delete this.ellipsis;
+      delete this.content;
     }
   };
   return MultiClamp;

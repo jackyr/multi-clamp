@@ -15,6 +15,8 @@
     <div class="text3">React makes it painless to create interactive UIs. Design simple views for each state in your application, and React will efficiently update and render just the right components when your data changes.</div>
     <br />
     <div class="text4">React makes it painless to create interactive UIs. Design simple views for each state in your application, and React will efficiently update and render just the right components when your data changes.</div>
+    <br />
+    <div class="text5" style="height: 48px;">React makes it painless to create interactive UIs. Design simple views for each state in your application, and React will efficiently update and render just the right components when your data changes.</div>
   </div>
   <script src="../MultiClamp.js"></script>
   <script>
@@ -30,6 +32,9 @@
     var text4 = new MultiClamp(document.querySelector('.text4'), {
       clamp: 2,
       reverse: true
+    });
+    var text5 = new MultiClamp(document.querySelector('.text5'), {
+      clamp: 'auto',
     });
   </script>
 </body>

@@ -17,7 +17,7 @@ Simple, efficient and easy-to-use multiline text clamp module. (supports reverse
 [Demo Page](https://jackyr.github.io/multi-clamp/example/index.html)
 
 ## Browser compatibility
-Supports IE8+ / Android4+ / IOS6+ / modern browsers
+Supports IE8+ / Android4+ / IOS6+ / etc. Almost all of the common browsers on PC / mobile device.
 
 ## Installation
 You can install multi-clamp from npm:
@@ -50,8 +50,8 @@ new MultiClamp(document.getElementById('textContainer'), {
 #### `ellipsis`: string
 Ellipsis can be simple string or HTML string. default: '...'
 
-#### `clamp`: number
-The max number of lines to show. default: 3
+#### `clamp`: number || 'auto'
+The max number of lines to show. It will try to fill up the available space when set to string 'auto', and at this point you should set a static height on the text container element. default: 3
 
 #### `reverse`: boolean
 You can clamp the content from back to front, the ellipsis will be in the front. default: false
@@ -61,6 +61,10 @@ The default behavior is to split by letters. If you want to split by words, set 
 
 #### `disableCssClamp`: boolean
 Multi-clamp will use native css clamp(-webkit-line-clamp) in supported browser when the ellipsis is set to '...'. If you don't want to use css clamp, set disableCssClamp to true. default: false
+
+## Instance method
+#### `reload()`
+You can call this method to re-clamp when the text content or style changes
 
 ## License
 MIT
