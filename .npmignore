@@ -1,0 +1,4 @@
+example/
+.eslintrc.js
+.gitignore
+.npmignore
