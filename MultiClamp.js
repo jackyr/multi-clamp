@@ -59,6 +59,7 @@
     this.useCssClamp = !this.option.disableCssClamp
       && !this.autoClamp
       && !this.option.reverse
+      && !this.option.splitByWords
       && this.option.ellipsis === '...'
       && typeof document.body.style.webkitLineClamp !== 'undefined';
 
