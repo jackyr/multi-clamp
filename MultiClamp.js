@@ -141,14 +141,13 @@
       }
       if (!maxHeight) return;
 
-      var defaultIncrease = (this.option.lineTextLen || Math.min(20, text.length / this.option.clamp)) * this.option.clamp;
-
       if (currentHeight > maxHeight) {
         this.ellipsis.style.display = '';
         var trunk = this.option.splitByWords ? text.match(/\w+|\W+?/g) : text;
+        var defaultIncrease = (this.option.lineTextLen || Math.min(20, text.length / this.option.clamp)) * this.option.clamp;
         this.trunkSlice(trunk, maxHeight, defaultIncrease, 0, false);
       } else {
-        this.ellipsis.style.display = 'none';
+        this.element.innerHTML = getText(this.content);
       }
     },
     trunkSlice: function(trunk, maxHeight, increase, len, isDecrease) {
