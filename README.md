@@ -1,7 +1,7 @@
 # multi-clamp [![npm](https://img.shields.io/npm/v/multi-clamp.svg?style=flat-square)](https://www.npmjs.com/package/multi-clamp)
 Simple, efficient and easy-to-use multiline text clamp module. (supports reverse clamp)
 
-For React? See [react-multi-clamp](https://github.com/jackyr/react-multi-clamp) [![npm](https://img.shields.io/npm/v/react-multi-clamp.svg?style=flat-square)](https://www.npmjs.com/package/react-multi-clamp)
+For React? See [react-multi-clamp](https://github.com/jackyr/react-multi-clamp) [![npm](https://img.shields.io/npm/v/react-multi-clamp.svg?style=flat-square)](https://www.npmjs.com/package/react-multi-clamp)
 
 ## Samples
 - Default multiline text clamp:
@@ -35,7 +35,7 @@ Import multi-clamp.
 import MultiClamp from 'multi-clamp';
 ```
 
-Or use [MultiClamp.min.js](https://raw.githubusercontent.com/jackyr/multi-clamp/master/MultiClamp.min.js) in browser directly
+Or use [MultiClamp.min.js](https://raw.githubusercontent.com/jackyr/multi-clamp/master/MultiClamp.min.js) in browser directly.
 
 ```html
 <script src="./MultiClamp.min.js"></script>
