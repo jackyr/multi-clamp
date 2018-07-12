@@ -15,10 +15,10 @@
     return (str + '').replace(/[^\d.]/g, '') - 0;
   }
   function setText(elm, text) {
-    return elm.textContent ? elm.textContent = text : elm.innerText = text;
+    return 'textContent' in elm ? elm.textContent = text : elm.innerText = text;
   }
   function getText(elm) {
-    return elm.textContent ? elm.textContent : elm.innerText;
+    return 'textContent' in elm ? elm.textContent : elm.innerText;
   }
   function getStyle(elm, style) {
     if (window.getComputedStyle) return window.getComputedStyle(elm, null).getPropertyValue(style);
