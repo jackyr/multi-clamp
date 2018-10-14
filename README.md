@@ -70,6 +70,12 @@ The default behavior is to split by letters. If you want to split by words, set 
 #### `disableCssClamp`: boolean
 Multi-clamp will use native css clamp(-webkit-line-clamp) in supported browser when the ellipsis is set to '...'. If you don't want to use css clamp, set disableCssClamp to true. default: false
 
+#### `onClampStart`: function({ needClamp: boolean }): void || false
+This callback function will be executed when clamp starts, and will not be executed when use native css clamp. Clamp will be prevented when return value is false. default: function() {}
+
+#### `onClampEnd`: function({ didClamp: boolean }): void
+This callback function will be executed when clamp ends, and will not be executed when use native css clamp. default: function() {}
+
 ## Instance method
 #### `reload()`
 You can call this method to re-clamp when the text content or style changes

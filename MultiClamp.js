@@ -42,7 +42,11 @@
       clamp: 'clamp' in _option ? _option.clamp : 3,
       reverse: 'reverse' in _option ? !!_option.reverse : false,
       splitByWords: 'splitByWords' in _option ? !!_option.splitByWords : false,
-      disableCssClamp: 'disableCssClamp' in _option ? !!_option.disableCssClamp : false
+      disableCssClamp: 'disableCssClamp' in _option ? !!_option.disableCssClamp : false,
+      onClampStart: 'onClampStart' in _option && typeof _option.onClampStart === 'function'
+        ? _option.onClampStart : function() {},
+      onClampEnd: 'onClampEnd' in _option && typeof _option.onClampEnd === 'function'
+        ? _option.onClampEnd : function() {}
     };
     if ('lineTextLen' in _option) this.option.lineTextLen = _option.lineTextLen;
     
@@ -127,10 +131,11 @@
     },
     clamp: function() {
       if (this.useCssClamp) return;
+      var self = this;
       var text = getText(this.content);
       var currentHeight = getHeight(this.wrapper);
       var singleLineHeight = this.getSingleLineHeight();
-      if (text === '' || !currentHeight || !singleLineHeight) return;
+      if (text === '' || !currentHeight || !singleLineHeight) return doNotNeedToClamp();
       
       var maxHeight;
       if (this.autoClamp) {
@@ -139,15 +144,36 @@
       } else {
         maxHeight = singleLineHeight * this.option.clamp;
       }
-      if (!maxHeight) return;
+      if (!maxHeight) return doNotNeedToClamp();
 
       if (currentHeight > maxHeight) {
-        this.ellipsis.style.display = '';
-        var trunk = this.option.splitByWords ? text.match(/\w+|\W+?/g) : text;
-        var defaultIncrease = (this.option.lineTextLen || Math.min(20, text.length / this.option.clamp)) * this.option.clamp;
-        this.trunkSlice(trunk, maxHeight, defaultIncrease, 0, false);
+        var onClampStartReturnValue = this.option.onClampStart.call(this, {
+          needClamp: true
+        });
+        if (onClampStartReturnValue === undefined || !!onClampStartReturnValue) {
+          this.ellipsis.style.display = '';
+          var trunk = this.option.splitByWords ? text.match(/\w+|\W+?/g) : text;
+          var defaultIncrease = (this.option.lineTextLen || Math.min(20, text.length / this.option.clamp)) * this.option.clamp;
+          this.trunkSlice(trunk, maxHeight, defaultIncrease, 0, false);
+          this.option.onClampEnd.call(this, {
+            didClamp: true
+          });
+        } else {
+          doNotNeedToClamp(true);
+        }
       } else {
-        this.element.innerHTML = getText(this.content);
+        doNotNeedToClamp();
+      }
+
+      function doNotNeedToClamp(isForcePrevent) {
+        if (!isForcePrevent) self.option.onClampStart.call(self, {
+          needClamp: false
+        });
+        self.element.innerHTML = getText(self.content);
+        self.clean();
+        self.option.onClampEnd.call(self, {
+          didClamp: false
+        });
       }
     },
     trunkSlice: function(trunk, maxHeight, increase, len, isDecrease) {
@@ -164,6 +190,11 @@
           if (this.option.splitByWords && /\s/.test(slicedTrunk[this.option.reverse ? 0 : slicedTrunk.length - 1])) {
             setText(this.content, (this.option.reverse ? slicedTrunk.slice(1) : slicedTrunk.slice(0, slicedTrunk.length - 1)).join(''));
           }
+          if (this.option.reverse) {
+            this.element.innerHTML = this.ellipsis.innerHTML + getText(this.content);
+          } else {
+            this.element.innerHTML = getText(this.content) + this.ellipsis.innerHTML;
+          }
           this.clean();
           return;
         }
@@ -172,11 +203,6 @@
       }
     },
     clean: function () {
-      if (this.option.reverse) {
-        this.element.innerHTML = this.ellipsis.innerHTML + getText(this.content);
-      } else {
-        this.element.innerHTML = getText(this.content) + this.ellipsis.innerHTML;
-      }
       this.wrapper = null;
       this.ellipsis = null;
       this.content = null;

@@ -22,7 +22,13 @@
   <script>
     var text1 = new MultiClamp(document.querySelector('.text1'));
     var text2 = new MultiClamp(document.querySelector('.text2'), {
-      disableCssClamp: true
+      disableCssClamp: true,
+      onClampStart: function(e) {
+        console.log('onClampStart', e);
+      },
+      onClampEnd: function(e) {
+        console.log('onClampEnd', e);
+      }
     });
     var text3 = new MultiClamp(document.querySelector('.text3'), {
       clamp: 2,
