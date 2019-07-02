@@ -47,44 +47,55 @@
   var MultiClamp = function(element, option) {
     if (!element) return;
     this.element = element.length ? element[0] : element;
-    var _option = option || {};
+    this.originalOption = option || {};
 
-    this.option = {
-      ellipsis: 'ellipsis' in _option ? _option.ellipsis : '...',
-      clamp: 'clamp' in _option ? _option.clamp : 3,
-      reverse: 'reverse' in _option ? !!_option.reverse : false,
-      splitByWords: 'splitByWords' in _option ? !!_option.splitByWords : false,
-      disableCssClamp: 'disableCssClamp' in _option ? !!_option.disableCssClamp : false,
-      onClampStart: 'onClampStart' in _option && typeof _option.onClampStart === 'function'
-        ? _option.onClampStart : function() {},
-      onClampEnd: 'onClampEnd' in _option && typeof _option.onClampEnd === 'function'
-        ? _option.onClampEnd : function() {}
-    };
-    if ('lineTextLen' in _option) this.option.lineTextLen = _option.lineTextLen;
-    
-    if (this.option.clamp === 'auto') {
-      this.autoClamp = true;
-    } else {
-      this.option.clamp = int(this.option.clamp);
-      if (isNaN(this.option.clamp) || this.option.clamp < 1) {
-        throw new Error('Invaild clamp number!');
-      }
-      this.autoClamp = false;
-    }
-
-    this.useCssClamp = !this.option.disableCssClamp
-      && !this.autoClamp
-      && !this.option.reverse
-      && !this.option.splitByWords
-      && this.option.ellipsis === '...'
-      && typeof document.body.style.webkitLineClamp !== 'undefined';
-
+    this.preInit(this.originalOption);
     this.init();
   };
   MultiClamp.prototype = {
     constructor: MultiClamp,
-    reload: function() {
+    reload: function(option) {
+      if (option) {
+        if (option.useOriginalText) {
+          this.element.innerHTML = this.contentHtml;
+        }
+        var reloadOption = {};
+        for (var key in this.originalOption) reloadOption[key] = this.originalOption[key];
+        for (var k in option) reloadOption[k] = option[k];
+        this.preInit(reloadOption);
+      }
       this.init();
+    },
+    preInit: function(option) {
+      this.option = {
+        ellipsis: 'ellipsis' in option ? option.ellipsis : '...',
+        clamp: 'clamp' in option ? option.clamp : 3,
+        reverse: 'reverse' in option ? !!option.reverse : false,
+        splitByWords: 'splitByWords' in option ? !!option.splitByWords : false,
+        disableCssClamp: 'disableCssClamp' in option ? !!option.disableCssClamp : false,
+        onClampStart: 'onClampStart' in option && typeof option.onClampStart === 'function'
+          ? option.onClampStart : function() {},
+        onClampEnd: 'onClampEnd' in option && typeof option.onClampEnd === 'function'
+          ? option.onClampEnd : function() {}
+      };
+      if ('lineTextLen' in option) this.option.lineTextLen = option.lineTextLen;
+      
+      if (this.option.clamp === 'auto') {
+        this.autoClamp = true;
+      } else {
+        this.option.clamp = int(this.option.clamp);
+        if (isNaN(this.option.clamp) || this.option.clamp < 1) {
+          throw new Error('Invaild clamp number!');
+        }
+        this.autoClamp = false;
+      }
+  
+      this.useCssClamp = !this.option.disableCssClamp
+        && !this.autoClamp
+        && !this.option.reverse
+        && !this.option.splitByWords
+        && this.option.ellipsis === '...'
+        && typeof document.body.style.webkitLineClamp !== 'undefined';
     },
     init: function() {
       if (this.useCssClamp) {
