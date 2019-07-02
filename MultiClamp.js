@@ -14,6 +14,9 @@
   function num(str) {
     return (str + '').replace(/[^\d.]/g, '') - 0;
   }
+  function accFix (num) {
+    return Math.round(num * 100) / 100;
+  }
   function setText(elm, text) {
     return 'textContent' in elm ? elm.textContent = text : elm.innerText = text;
   }
@@ -29,7 +32,16 @@
   function getHeight(elm) {
     var height = getStyle(elm, 'height');
     if (height.indexOf('px') > -1) return num(height);
-    return num(elm.clientHeight) - num(getStyle(elm, 'padding-top')) - num(getStyle(elm, 'padding-bottom'));
+    return accFix(num(elm.clientHeight) - num(getStyle(elm, 'padding-top')) - num(getStyle(elm, 'padding-bottom')));
+  }
+  function getElement(html) {
+    if (/^<[\w\W]+>$/.test(html)) {
+      var tempNode = document.createElement('div');
+      tempNode.innerHTML = html;
+      return tempNode.firstElementChild || tempNode.firstChild;
+    } else {
+      return html;
+    }
   }
 
   var MultiClamp = function(element, option) {
@@ -68,13 +80,11 @@
       && typeof document.body.style.webkitLineClamp !== 'undefined';
 
     this.init();
-    this.clamp();
   };
   MultiClamp.prototype = {
     constructor: MultiClamp,
     reload: function() {
       this.init();
-      this.clamp();
     },
     init: function() {
       if (this.useCssClamp) {
@@ -89,127 +99,130 @@
           this.element.style[i] = cssClampStyle[i];
         }
       } else {
-        this.ellipsis = document.createElement('span');
-        this.ellipsis.style.display = 'none';
-        this.ellipsis.innerHTML = this.option.ellipsis;
-        this.content = document.createElement('span');
-        this.wrapper = document.createElement('div');
-        setText(this.content, getText(this.element));
-        this.element.innerHTML = '';
-        this.element.appendChild(this.wrapper);
-        if (this.option.reverse) {
-          this.wrapper.appendChild(this.ellipsis);
-          this.wrapper.appendChild(this.content);
-        } else {
-          this.wrapper.appendChild(this.content);
-          this.wrapper.appendChild(this.ellipsis);
-        }
+        this.contentHtml = this.element.innerHTML;
+        this.contentText = getText(this.element);
+        this.ellipsis = getElement(this.option.ellipsis);
+        this.clamp();
       }
     },
     getSingleLineHeight: function() {  
-      var lineHeight = getStyle(this.wrapper, 'line-height');
+      var lineHeight = getStyle(this.element, 'line-height');
       var self = this;
 
       if (lineHeight.indexOf('px') > -1) {
         return num(lineHeight);
       } else if (!isNaN(lineHeight)) {
-        var fontSize = getStyle(this.wrapper, 'font-size');
-        if (fontSize.indexOf('px') > -1) return num(fontSize) * (lineHeight * 100) / 100;
-        if (fontSize.indexOf('pt') > -1) return num(fontSize) * 400 / 300 * (lineHeight * 100) / 100;
+        var fontSize = getStyle(this.element, 'font-size');
+        if (fontSize.indexOf('px') > -1) return accFix(num(fontSize) * lineHeight);
+        if (fontSize.indexOf('pt') > -1) return accFix(num(fontSize) * 4 / 3 * lineHeight);
         return createSingleLineAndGetHeight();
       } else {
         return createSingleLineAndGetHeight();
       }
 
       function createSingleLineAndGetHeight() {
-        var tempText = getText(self.content);
-        setText(self.content, '.');
-        var height = getHeight(self.wrapper);
-        setText(self.content, tempText);
+        self.element.innerHTML = '.';
+        var height = getHeight(self.element);
+        self.element.innerHTML = self.contentHtml;
         return height;
       }
     },
     clamp: function() {
-      if (this.useCssClamp) return;
       var self = this;
-      var text = getText(this.content);
-      var currentHeight = getHeight(this.wrapper);
-      var singleLineHeight = this.getSingleLineHeight();
-      if (text === '' || !currentHeight || !singleLineHeight) return doNotNeedToClamp();
-      
-      var maxHeight;
+      var singleLineHeight, currentHeight, maxHeight;
+
+      singleLineHeight = this.getSingleLineHeight();
+
+      if (this.contentText === '' || !singleLineHeight) {
+        doNotNeedToClamp();
+        return;
+      }
+
       if (this.autoClamp) {
         maxHeight = getHeight(this.element);
         this.option.clamp = int(maxHeight / singleLineHeight);
+        this.originalHeightStyle = this.element.style.height;
+        this.element.style.height = 'auto';
       } else {
-        maxHeight = singleLineHeight * this.option.clamp;
+        maxHeight = accFix(singleLineHeight * this.option.clamp);
       }
-      if (!maxHeight) return doNotNeedToClamp();
 
-      if (currentHeight > maxHeight) {
-        var onClampStartReturnValue = this.option.onClampStart.call(this, {
-          needClamp: true
-        });
-        if (onClampStartReturnValue === undefined || !!onClampStartReturnValue) {
-          this.ellipsis.style.display = '';
-          var trunk = this.option.splitByWords ? text.match(/\w+|\W+?/g) : text;
-          var defaultIncrease = (this.option.lineTextLen || Math.min(20, text.length / this.option.clamp)) * this.option.clamp;
-          this.trunkSlice(trunk, maxHeight, defaultIncrease, 0, false);
-          this.option.onClampEnd.call(this, {
-            didClamp: true
-          });
-        } else {
-          doNotNeedToClamp(true);
-        }
-      } else {
+      currentHeight = getHeight(this.element);
+
+      if (!currentHeight || !maxHeight || currentHeight <= maxHeight) {
+        if (this.autoClamp) this.element.style.height = this.originalHeightStyle;
         doNotNeedToClamp();
+        return;
+      }
+
+      var onClampStartReturnValue = this.option.onClampStart.call(this, {
+        needClamp: true
+      });
+
+      if (onClampStartReturnValue === undefined || !!onClampStartReturnValue) {
+        var trunk = this.option.splitByWords ? this.contentText.match(/\w+|\W+?/g) : this.contentText;
+        var defaultIncrease = int(this.option.lineTextLen || Math.min(20, this.contentText.length / this.option.clamp)) * this.option.clamp;
+
+        this.trunkSlice(trunk, maxHeight, defaultIncrease, defaultIncrease, false);
+
+        if (this.autoClamp) this.element.style.height = this.originalHeightStyle;
+
+        this.option.onClampEnd.call(this, {
+          didClamp: true
+        });
+      } else {
+        if (this.autoClamp) this.element.style.height = this.originalHeightStyle;
+        doNotNeedToClamp(true);
       }
 
       function doNotNeedToClamp(isForcePrevent) {
         if (!isForcePrevent) self.option.onClampStart.call(self, {
           needClamp: false
         });
-        self.element.innerHTML = getText(self.content);
-        self.clean();
         self.option.onClampEnd.call(self, {
           didClamp: false
         });
       }
     },
     trunkSlice: function(trunk, maxHeight, increase, len, isDecrease) {
+      var self = this;
       var slicedTrunk = this.option.reverse ? trunk.slice(trunk.length - len) : trunk.slice(0, len);
-  
-      setText(this.content, this.option.splitByWords ? slicedTrunk.join('') : slicedTrunk);
+
+      fill(this.option.splitByWords ? slicedTrunk.join('') : slicedTrunk);
   
       var i;
-      if (getHeight(this.wrapper) > maxHeight) {
+      if (getHeight(this.element) > maxHeight) {
         i = isDecrease ? increase : int(increase / 2) || 1;
         this.trunkSlice(trunk, maxHeight, i, len - i, true);
       } else {
         if (increase === 1 && isDecrease) {
           if (this.option.splitByWords && /\s/.test(slicedTrunk[this.option.reverse ? 0 : slicedTrunk.length - 1])) {
-            setText(this.content, (this.option.reverse ? slicedTrunk.slice(1) : slicedTrunk.slice(0, slicedTrunk.length - 1)).join(''));
+            fill((this.option.reverse ? slicedTrunk.slice(1) : slicedTrunk.slice(0, slicedTrunk.length - 1)).join(''));
           }
-          if (this.option.reverse) {
-            this.element.innerHTML = this.ellipsis.innerHTML + getText(this.content);
-          } else {
-            this.element.innerHTML = getText(this.content) + this.ellipsis.innerHTML;
-          }
-          this.clean();
           return;
         }
         i = isDecrease ? int(increase / 2) || 1 : increase;
         this.trunkSlice(trunk, maxHeight, i, len + i, false);
       }
+
+      function fill(text) {
+        if (typeof self.ellipsis === 'object') {
+          setText(self.element, text);
+          if (self.option.reverse) {
+            self.element.insertBefore(self.ellipsis.cloneNode(true), self.element.firstChild);
+          } else {
+            self.element.appendChild(self.ellipsis.cloneNode(true));
+          } 
+        } else {
+          if (self.option.reverse) {
+            setText(self.element, self.ellipsis + text);
+          } else {
+            setText(self.element, text + self.ellipsis);
+          } 
+        }
+      }
     },
-    clean: function () {
-      this.wrapper = null;
-      this.ellipsis = null;
-      this.content = null;
-      delete this.wrapper;
-      delete this.ellipsis;
-      delete this.content;
-    }
   };
+
   return MultiClamp;
 }));
