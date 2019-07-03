@@ -42,6 +42,10 @@
     var text5 = new MultiClamp(document.querySelector('.text5'), {
       clamp: 'auto'
     });
+    setTimeout(function() {
+      document.querySelector('.text5').style.height = '72px';
+      text5.reload({ useOriginalText: true });
+    }, 3000);
   </script>
 </body>
 </html>
