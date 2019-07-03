@@ -70,15 +70,29 @@ The default behavior is to split by letters. If you want to split by words, set 
 #### `disableCssClamp`: boolean
 Multi-clamp will use native css clamp(-webkit-line-clamp) in supported browser when the ellipsis is set to '...'. If you don't want to use css clamp, set disableCssClamp to true. default: false
 
-#### `onClampStart`: function({ needClamp: boolean }): void || false
+#### `onClampStart`: function({ needClamp: boolean }): void || false v1.1+
 This callback function will be executed when clamp starts, and will not be executed when use native css clamp. Clamp will be prevented when return value is false. default: function() {}
 
-#### `onClampEnd`: function({ didClamp: boolean }): void
+#### `onClampEnd`: function({ didClamp: boolean }): void v1.1+
 This callback function will be executed when clamp ends, and will not be executed when use native css clamp. default: function() {}
 
 ## Instance method
 #### `reload()`
-You can call this method to re-clamp when the text content or style changes
+Call this method to re-clamp when the text content or style changes
+
+#### `reload(options)` v2.0+
+You can change initial options when reloading through the options param, and use the original text to re-clamp when options.useOriginalText set to true. default: { ...initOptions, useOriginalText: false }
+
+## Changelog
+#### v2.0
+- Support change initial options and use the original text to re-clamp. [#2](https://github.com/jackyr/multi-clamp/issues/2)
+- Refactoring. [#3](https://github.com/jackyr/multi-clamp/issues/3)
+
+#### v1.1
+-  Add onClampStart and onClampEnd callback functions. [react-multi-clamp#2](https://github.com/jackyr/react-multi-clamp/issues/2)
+
+#### v1.0.3
+- Bugfix. [#1](https://github.com/jackyr/multi-clamp/issues/1)
 
 ## License
 MIT
