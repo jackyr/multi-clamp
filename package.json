@@ -1,6 +1,6 @@
 {
   "name": "multi-clamp",
-  "version": "2.0.0-beta.0",
+  "version": "2.0.0",
   "description": "Simple, efficient and easy-to-use multiline text clamp module. (supports reverse clamp)",
   "main": "index.js",
   "scripts": {
