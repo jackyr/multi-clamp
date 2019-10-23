@@ -48,6 +48,7 @@
     if (!element) return;
     this.element = element.length ? element[0] : element;
     this.originalOption = option || {};
+    this.originalElement = this.element.cloneNode(true);
 
     this.preInit(this.originalOption);
     this.init();
@@ -57,7 +58,13 @@
     reload: function(option) {
       if (option) {
         if (option.useOriginalText) {
-          this.element.innerHTML = this.contentHtml;
+          this.element.innerHTML = this.originalElement.innerHTML;
+        }
+        if (this.element.style.display === '-webkit-box') {
+          var cssStyleList = ['display', 'overflow', 'WebkitLineClamp', 'WebkitBoxOrient'];
+          for (var i = 0; i < cssStyleList.length; i++) {
+            this.element.style[cssStyleList[i]] = this.originalElement.style[cssStyleList[i]];
+          }
         }
         var reloadOption = {};
         for (var key in this.originalOption) reloadOption[key] = this.originalOption[key];
@@ -102,7 +109,6 @@
         var cssClampStyle = {
           display: '-webkit-box',
           overflow: 'hidden',
-          textOverflow: 'ellipsis',
           WebkitLineClamp: this.option.clamp,
           WebkitBoxOrient: 'vertical'
         };
@@ -110,7 +116,6 @@
           this.element.style[i] = cssClampStyle[i];
         }
       } else {
-        this.contentHtml = this.element.innerHTML;
         this.contentText = getText(this.element);
         this.ellipsis = getElement(this.option.ellipsis);
         this.clamp();
@@ -132,15 +137,16 @@
       }
 
       function createSingleLineAndGetHeight() {
+        var contentHTML = self.element.innerHTML;
         self.element.innerHTML = '.';
         var height = getHeight(self.element);
-        self.element.innerHTML = self.contentHtml;
+        self.element.innerHTML = contentHTML;
         return height;
       }
     },
     clamp: function() {
       var self = this;
-      var singleLineHeight, currentHeight, maxHeight;
+      var singleLineHeight, currentHeight, maxHeight, heightStyle;
 
       singleLineHeight = this.getSingleLineHeight();
 
@@ -152,7 +158,7 @@
       if (this.autoClamp) {
         maxHeight = getHeight(this.element);
         this.option.clamp = int(maxHeight / singleLineHeight);
-        this.originalHeightStyle = this.element.style.height;
+        heightStyle = this.element.style.height;
         this.element.style.height = 'auto';
       } else {
         maxHeight = accFix(singleLineHeight * this.option.clamp);
@@ -161,7 +167,7 @@
       currentHeight = getHeight(this.element);
 
       if (!currentHeight || !maxHeight || currentHeight <= maxHeight) {
-        if (this.autoClamp) this.element.style.height = this.originalHeightStyle;
+        if (this.autoClamp) this.element.style.height = heightStyle;
         doNotNeedToClamp();
         return;
       }
@@ -176,13 +182,13 @@
 
         this.trunkSlice(trunk, maxHeight, defaultIncrease, defaultIncrease, false);
 
-        if (this.autoClamp) this.element.style.height = this.originalHeightStyle;
+        if (this.autoClamp) this.element.style.height = heightStyle;
 
         this.option.onClampEnd.call(this, {
           didClamp: true
         });
       } else {
-        if (this.autoClamp) this.element.style.height = this.originalHeightStyle;
+        if (this.autoClamp) this.element.style.height = heightStyle;
         doNotNeedToClamp(true);
       }
 

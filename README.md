@@ -84,6 +84,9 @@ Call this method to re-clamp when the text content or style changes
 You can change initial options when reloading through the options param, and use the original text to re-clamp when options.useOriginalText set to true. default: { ...initOptions, useOriginalText: false }
 
 ## Changelog
+#### v2.0.1
+- Bugfix. [#6](https://github.com/jackyr/multi-clamp/issues/6)
+
 #### v2.0.0
 - Support change initial options and use the original text to re-clamp. [#2](https://github.com/jackyr/multi-clamp/issues/2)
 - Refactoring. [#3](https://github.com/jackyr/multi-clamp/issues/3)
