@@ -20,6 +20,22 @@
   </div>
   <script src="../MultiClamp.js"></script>
   <script>
+    function createMoreBtn(clickHandler) {
+      var moreBtn = document.createElement('a');
+      moreBtn.innerHTML = 'more>>';
+      moreBtn.style.color = 'blue';
+      moreBtn.style.marginLeft = '5px';
+      moreBtn.style.cursor = 'pointer';
+      if (moreBtn.addEventListener) {
+        moreBtn.addEventListener('click', clickHandler, false);
+      } else if (moreBtn.attachEvent) {
+        moreBtn.attachEvent('onclick', clickHandler);
+      } else {
+        moreBtn.onclick = clickHandler;
+      }
+      return moreBtn;
+    }
+
     var text1 = new MultiClamp(document.querySelector('.text1'));
     var text2 = new MultiClamp(document.querySelector('.text2'), {
       disableCssClamp: true,
@@ -32,7 +48,12 @@
     });
     var text3 = new MultiClamp(document.querySelector('.text3'), {
       clamp: 2,
-      ellipsis: '<a style="color: blue; padding-left: 5px">more>></a>',
+      ellipsis: createMoreBtn(function() {
+        text3.reload({
+          clamp: 'auto',
+          useOriginalText: true
+        })
+      }),
       splitByWords: true
     });
     var text4 = new MultiClamp(document.querySelector('.text4'), {

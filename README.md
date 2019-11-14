@@ -55,8 +55,8 @@ new MultiClamp(document.getElementById('textContainer'), {
 ```
 
 ## Options
-#### `ellipsis`: string
-Ellipsis can be simple string or HTML string. default: '...'
+#### `ellipsis`: string || element
+Ellipsis can be simple string, HTML string or element object. default: '...'
 
 #### `clamp`: number || 'auto'
 The max number of lines to show. It will try to fill up the available space when set to string 'auto', and at this point you should set a static height on the text container element. default: 3
@@ -84,6 +84,9 @@ Call this method to re-clamp when the text content or style changes
 You can change initial options when reloading through the options param, and use the original text to re-clamp when options.useOriginalText set to true. default: { ...initOptions, useOriginalText: false }
 
 ## Changelog
+#### v2.0.2
+- Bugfix when passing element object to option ellipsis. [react-multi-clamp#3](https://github.com/jackyr/react-multi-clamp/issues/3)
+
 #### v2.0.1
 - Bugfix. [#6](https://github.com/jackyr/multi-clamp/issues/6)
 

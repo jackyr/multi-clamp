@@ -214,7 +214,9 @@
       } else {
         if (increase === 1 && isDecrease) {
           if (this.option.splitByWords && /\s/.test(slicedTrunk[this.option.reverse ? 0 : slicedTrunk.length - 1])) {
-            fill((this.option.reverse ? slicedTrunk.slice(1) : slicedTrunk.slice(0, slicedTrunk.length - 1)).join(''));
+            fill((this.option.reverse ? slicedTrunk.slice(1) : slicedTrunk.slice(0, slicedTrunk.length - 1)).join(''), true);
+          } else {
+            fill(this.option.splitByWords ? slicedTrunk.join('') : slicedTrunk, true);
           }
           return;
         }
@@ -222,13 +224,13 @@
         this.trunkSlice(trunk, maxHeight, i, len + i, false);
       }
 
-      function fill(text) {
+      function fill(text, isLast) {
         if (typeof self.ellipsis === 'object') {
           setText(self.element, text);
           if (self.option.reverse) {
-            self.element.insertBefore(self.ellipsis.cloneNode(true), self.element.firstChild);
+            self.element.insertBefore(isLast ? self.ellipsis : self.ellipsis.cloneNode(true), self.element.firstChild);
           } else {
-            self.element.appendChild(self.ellipsis.cloneNode(true));
+            self.element.appendChild(isLast ? self.ellipsis : self.ellipsis.cloneNode(true));
           } 
         } else {
           if (self.option.reverse) {
